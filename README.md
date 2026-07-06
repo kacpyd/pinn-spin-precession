@@ -300,9 +300,11 @@ The conservation terms improve long-time stability and prevent physically incorr
 
 ---
 
-## Experiments
+## Experiments and results
 
-### 1. Magnetic field along the z-axis
+### Experiment 1: Magnetic field along the z-axis
+
+The first experiment considers a static magnetic field directed along the z-axis:
 
 ```math
 \mathbf{B}=
@@ -313,7 +315,18 @@ The conservation terms improve long-time stability and prevent physically incorr
 \end{pmatrix}.
 ```
 
-The analytical solution is
+For the initial condition
+
+```math
+\mathbf{S}(0)=
+\begin{pmatrix}
+1\\
+0\\
+0
+\end{pmatrix},
+```
+
+the analytical solution is
 
 ```math
 S_x(t)=\cos t,
@@ -323,17 +336,41 @@ S_y(t)=-\sin t,
 S_z(t)=0.
 ```
 
-Typical results:
+The spin therefore precesses in the xy-plane.
 
-| Metric | Value |
-|---|---:|
-| MAE for `S_x` | `3.68e-3` |
-| MAE for `S_y` | `1.62e-2` |
-| MAE for `S_z` | `4.51e-3` |
-| Mean norm error | `2.07e-2` |
+#### Predicted spin components
+
+The PINN prediction closely follows the analytical solution over the complete time interval.
+
+![PINN solution for a magnetic field along the z-axis](images/z_field_solution.png)
+
+#### Training losses
+
+The total loss and its individual components decrease during training, indicating that the network learns both the Bloch equations and the imposed physical constraints.
+
+![Training losses for the z-axis magnetic field](images/z_field_losses.png)
+
+#### Bloch-vector norm
+
+The predicted norm remains close to one, although small deviations accumulate near the end of the time interval.
+
+![Bloch-vector norm for the z-axis magnetic field](images/z_field_norm.png)
+
+#### Evaluation metrics
+
+| Metric             |     Value |
+| ------------------ | --------: |
+| MAE for `S_x`      | `3.68e-3` |
+| MAE for `S_y`      | `1.62e-2` |
+| MAE for `S_z`      | `4.51e-3` |
+| Mean norm error    | `2.07e-2` |
 | Maximum norm error | `4.63e-2` |
 
-### 2. Tilted magnetic field
+---
+
+### Experiment 2: Tilted magnetic field
+
+The second experiment uses a normalized magnetic field tilted by 45 degrees in the xz-plane:
 
 ```math
 \mathbf{B}=
@@ -344,7 +381,7 @@ Typical results:
 \end{pmatrix}.
 ```
 
-The conserved initial projection is
+The conserved initial projection onto the magnetic-field direction is
 
 ```math
 \mathbf{S}_0\cdot\hat{\mathbf{B}}
@@ -352,19 +389,49 @@ The conserved initial projection is
 \frac{1}{\sqrt{2}}.
 ```
 
-Typical results:
+In this configuration, all three components of the Bloch vector vary with time. The analytical reference trajectory is calculated using Rodrigues' rotation formula.
 
-| Metric | Value |
-|---|---:|
-| MAE for `S_x` | `1.40e-2` |
-| MAE for `S_y` | `1.96e-2` |
-| MAE for `S_z` | `1.40e-2` |
-| Mean norm error | `3.70e-3` |
-| Mean projection error | `2.10e-3` |
+#### Predicted spin components
 
-The predicted trajectory closely follows the analytical orbit on the Bloch sphere.
+The PINN accurately reproduces the oscillations of all three spin components.
+
+![PINN solution for a tilted magnetic field](images/tilted_field_solution.png)
+
+#### Training losses
+
+The training curves show the evolution of the physics, initial-condition, norm-conservation, and field-projection losses.
+
+![Training losses for the tilted magnetic field](images/tilted_field_losses.png)
+
+#### Physical invariants
+
+Both the Bloch-vector norm and the spin projection onto the magnetic-field direction remain approximately conserved.
+
+![Physical invariants for the tilted magnetic field](images/tilted_field_invariants.png)
+
+#### Bloch-sphere trajectory
+
+The PINN trajectory nearly overlaps the analytical orbit and precesses around the tilted magnetic-field direction.
 
 ![Spin precession around a tilted magnetic field](images/bloch_sphere_tilted_field.png)
+
+#### Evaluation metrics
+
+| Metric                         |     Value |
+| ------------------------------ | --------: |
+| MAE for `S_x`                  | `1.40e-2` |
+| MAE for `S_y`                  | `1.96e-2` |
+| MAE for `S_z`                  | `1.40e-2` |
+| Maximum error for `S_x`        | `4.03e-2` |
+| Maximum error for `S_y`        | `6.07e-2` |
+| Maximum error for `S_z`        | `4.05e-2` |
+| Mean norm error                | `3.70e-3` |
+| Maximum norm error             | `1.04e-2` |
+| Mean field-projection error    | `2.10e-3` |
+| Maximum field-projection error | `4.17e-3` |
+
+The second experiment demonstrates that including physical conservation laws in the loss function improves long-time stability and prevents convergence to physically incorrect trajectories.
+
 
 ---
 
@@ -382,8 +449,10 @@ pinn-spin-precession/
 └── images/
     ├── z_field_solution.png
     ├── z_field_norm.png
+    ├── z_field_losses.png
     ├── tilted_field_solution.png
     ├── tilted_field_invariants.png
+    ├── tilted_field_losses.png
     └── bloch_sphere_tilted_field.png
 ```
 
